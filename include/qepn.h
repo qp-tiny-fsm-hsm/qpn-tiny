@@ -140,14 +140,23 @@ typedef struct {
 /**
 * @param[in,out] me_ pointer to a subclass of ::QHsm (see @ref oop)
 */
+#ifndef QF_FSM_ACTIVE
 #define Q_SIG(me_)  (((QHsm *)(me_))->evt.sig)
+#else
+#define Q_SIG(me_)  (((QFsm *)(me_))->evt.sig)
+#endif
 
 #if (Q_PARAM_SIZE != 0U)
 /*! Macro to access the parameter of the current event of a state machine */
 /**
 * @param[in,out] me_ pointer to a subclass of ::QHsm (see @ref oop)
 */
+#ifndef QF_FSM_ACTIVE
 #define Q_PAR(me_)  (((QHsm *)(me_))->evt.par)
+#else
+#define Q_PAR(me_)  (((QFsm *)(me_))->evt.par)
+#endif
+
 #endif  /* (Q_PARAM_SIZE != 0U) */
 
 /****************************************************************************/
@@ -160,6 +169,7 @@ typedef QState (*QStateHandler)(void * const me);
 /****************************************************************************/
 /*! virtual table for the ::QHsm class. */
 typedef struct QHsmVtable QHsmVtable;
+typedef struct QFsmVtable QFsmVtable;
 
 /*! Hierarchical State Machine */
 /**
@@ -187,6 +197,14 @@ typedef struct {
     QEvt evt;  /*!< currently processed event in the HSM (protected) */
 } QHsm;
 
+typedef struct {
+    QFsmVtable const *vptr; /*!< virtual pointer */
+    QStateHandler state;  /*!< current active state (state-variable) */
+    QStateHandler temp;   /*!< temporary: tran. chain, target state, etc. */
+    QEvt evt;  /*!< currently processed event in the HSM (protected) */
+} QFsm;
+
+
 /*! Virtual table for the QHsm class */
 struct QHsmVtable {
     /*! Triggers the top-most initial transition in a HSM. */
@@ -194,6 +212,15 @@ struct QHsmVtable {
 
     /*! Dispatches an event to a HSM. */
     void (*dispatch)(QHsm * const me);
+};
+
+/*! Virtual table for the QFsm class */
+struct QFsmVtable {
+    /*! Triggers the top-most initial transition in a FSM. */
+    void (*init)(QFsm * const me);
+
+    /*! Dispatches an event to a FSM. */
+    void (*dispatch)(QFsm * const me);
 };
 
 /*! Polymorphically executes the top-most initial transition in a SM. */
@@ -212,6 +239,11 @@ struct QHsmVtable {
     (*(me_)->vptr->init)((me_)); \
 } while (false)
 
+#define QFSM_INIT(me_) do {      \
+    Q_ASSERT((me_)->vptr);       \
+    (*(me_)->vptr->init)((me_)); \
+} while (false)
+
 /*! Polymorphically dispatches an event to a HSM. */
 /**
 * @description
@@ -222,12 +254,14 @@ struct QHsmVtable {
 * @note Must be called after the "constructor" and after QHSM_INIT().
 */
 #define QHSM_DISPATCH(me_) ((*(me_)->vptr->dispatch)((me_)))
+#define QFSM_DISPATCH(me_) ((*(me_)->vptr->dispatch)((me_)))
 
 /* public methods */
 /*! "constructor" of a HSM.
 * @protected @memberof QHsm
 */
 void QHsm_ctor(QHsm * const me, QStateHandler initial);
+void QFsm_ctor(QFsm * const me, QStateHandler initial);
 
 /*! Obtain the current active state from a HSM (read only). */
 /**
@@ -236,6 +270,7 @@ void QHsm_ctor(QHsm * const me, QStateHandler initial);
 * @returns the current active state of a HSM
 */
 #define QHsm_state(me_) (Q_STATE_CAST(Q_HSM_UPCAST(me_)->state))
+#define QFsm_state(me_) (Q_STATE_CAST(Q_FSM_UPCAST(me_)->state))
 
 /*! Obtain the current active child state of a given parent in QHsm
 * @public @memberof QHsm
@@ -258,14 +293,16 @@ QStateHandler QHsm_childState_(QHsm * const me,
 */
 void QHsm_init_(QHsm * const me);
 
-/*! Implementation of dispatching events to QHsm.
-* @private @memberof QHsm
-*/
+/*! Implementation of the top-most initial transition in QFsm. */
+void QFsm_init_(QFsm * const me);
+
+/*! Implementation of dispatching events to QHsm. */
 void QHsm_dispatch_(QHsm * const me);
 
-/*! the top-state.
-* @protected @memberof QHsm
-*/
+/*! Implementation of dispatching events to QFsm. */
+void QFsm_dispatch_(QFsm * const me);
+
+/*! the top-state. */
 QState QHsm_top(void const * const me);
 
 
@@ -326,6 +363,7 @@ QState QHsm_top(void const * const me);
 * provides a descriptive name for the reason of this cast.
 */
 #define Q_HSM_UPCAST(ptr_) ((QHsm *)(ptr_))
+#define Q_FSM_UPCAST(ptr_) ((QFsm *)(ptr_))
 
 /*! Perform cast to ::QStateHandler. */
 /**
@@ -343,9 +381,13 @@ QState QHsm_top(void const * const me);
 * or and initial transition. Applicable to both HSMs and FSMs.
 * @include qepn_qtran.c
 */
+#ifndef QF_FSM_ACTIVE
 #define Q_TRAN(target_)  \
     ((Q_HSM_UPCAST(me))->temp = Q_STATE_CAST(target_), (QState)Q_RET_TRAN)
-
+#else
+#define Q_TRAN(target_)  \
+    ((Q_FSM_UPCAST(me))->temp = Q_STATE_CAST(target_), (QState)Q_RET_TRAN)
+#endif
 /*! Macro to call in a state-handler when it executes a transition
 * to history. Applicable only to HSMs.
 *
@@ -484,4 +526,3 @@ extern char_t const Q_ROM QP_versionStr[7];
 #define QP_getVersion() (QP_versionStr)
 
 #endif /* QEPN_H */
-

@@ -1,5 +1,5 @@
 ##############################################################################
-# Product: Makefile for QP-nano, Arduino-UNO, cooperative QV kernel, GNU-AVR
+# Product: Makefile for QP-nano, Arduino-UNO, preemptive QK kernel, GNU-AVR
 # Last Updated for Version: 5.4.0
 # Date of the Last Update:  2015-05-28
 #
@@ -49,7 +49,7 @@
 #-----------------------------------------------------------------------------
 # project name
 #
-PROJECT     := blinky-qv
+PROJECT     := blinky-qk
 
 #-----------------------------------------------------------------------------
 # project directories
@@ -61,14 +61,14 @@ QPN := ../../../../..
 endif
 
 # QP port used in this project
-QP_PORT_DIR := $(QPN)/ports/avr/qv/gnu
+QP_PORT_DIR := $(QPN)/ports/avr/qk/gnu
 
 # list of all source directories used by this project
 VPATH = \
 	.. \
 	../.. \
 	$(QPN)/src/qfn \
-	$(QPN)/src/qvn \
+	$(QPN)/src/qkn \
 	$(QP_PORT_DIR)
 
 # list of all include directories needed by this project
@@ -99,7 +99,7 @@ LD_SCRIPT := $(PROJECT).ld
 QP_SRCS := \
 	qepn.c \
 	qfn.c \
-	qvn.c
+	qkn.c
 
 QP_ASMS :=
 
@@ -130,7 +130,6 @@ CPP   := $(GNU_AVR)/bin/avr-g++
 AS    := $(GNU_AVR)/bin/avr-as
 LINK  := $(GNU_AVR)/bin/avr-gcc
 BIN   := $(GNU_AVR)/bin/avr-objcopy
-DUMP  := $(GNU_AVR)/bin/avr-objdump
 
 ##############################################################################
 # Typically, you should not need to change anything below this line
@@ -209,8 +208,6 @@ all: $(TARGET_HEX)
 
 $(TARGET_HEX): $(TARGET_ELF)
 	$(BIN) -O ihex $< $@
-	$(DUMP) -dS $<
-
 
 $(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)
 	$(LINK) $(LINKFLAGS) -o $@ $^ $(LIBS)

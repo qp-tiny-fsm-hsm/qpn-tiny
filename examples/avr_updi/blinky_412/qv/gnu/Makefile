@@ -61,7 +61,7 @@ QPN := ../../../../..
 endif
 
 # QP port used in this project
-QP_PORT_DIR := $(QPN)/ports/avr/qv/gnu
+QP_PORT_DIR := $(QPN)/ports/avr_updi/qv/gnu
 
 # list of all source directories used by this project
 VPATH = \
@@ -97,7 +97,7 @@ OUTPUT    := $(PROJECT)
 LD_SCRIPT := $(PROJECT).ld
 
 QP_SRCS := \
-	qepn.c \
+	qepn_fsm.c \
 	qfn.c \
 	qvn.c
 
@@ -110,7 +110,7 @@ LIBS      :=
 DEFINES   :=
 
 # AVR MCU type
-AVR_MCU=atmega328p
+AVR_MCU=attiny412
 
 #-----------------------------------------------------------------------------
 # GNU-AVR toolset (NOTE: You need to adjust to your machine)
@@ -209,7 +209,7 @@ all: $(TARGET_HEX)
 
 $(TARGET_HEX): $(TARGET_ELF)
 	$(BIN) -O ihex $< $@
-	$(DUMP) -dS $<
+	$(DUMP) -dS $< >$<.lss
 
 
 $(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)

@@ -1,10 +1,10 @@
 /**
 * @file
-* @brief QF-nano port to MSP430, preemptive QK-nano kernel, CCS-430 toolset
+* @brief QF-nano port AVR ATmega, cooperative QV-nano kernel, GNU-AVR toolset
 * @cond
 ******************************************************************************
 * Last Updated for Version: 6.8.0
-* Date of the Last Update:  2020-03-31
+* Date of the Last Update:  2020-03-22
 *
 *                    Q u a n t u m  L e a P s
 *                    ------------------------
@@ -28,7 +28,7 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program. If not, see <www.gnu.org/licenses/>.
+* along with this program. If not, see <www.gnu.org/licenses>.
 *
 * Contact information:
 * <www.state-machine.com/licensing>
@@ -39,29 +39,49 @@
 #ifndef QFN_PORT_H
 #define QFN_PORT_H
 
+/* GNU-AVR function attribute for "no-return" function */
+#define Q_NORETURN   __attribute__ ((noreturn)) void
+
+/* GNU-AVR extended keyword '__flash' allocates const objects to ROM */
+#define Q_ROM        
+
 /* QF-nano interrupt disable/enable... */
-#define QF_INT_DISABLE() __disable_interrupt()
-#define QF_INT_ENABLE()  __enable_interrupt()
+#define QF_INT_DISABLE() __asm__ __volatile__ ("cli" ::)
+#define QF_INT_ENABLE()  __asm__ __volatile__ ("sei" ::)
 
 /* QF-nano interrupt disabling policy for interrupt level */
 /*#define QF_ISR_NEST*/  /* nesting of ISRs not allowed */
 
-/* QK-nano interrupt entry/exit */
-#define QK_ISR_ENTRY()   ((void)0)
-#define QK_ISR_EXIT()    do { \
-    if (QK_sched_() != 0U) {  \
-        QK_activate_();       \
-    }                         \
+/* QV sleep mode, see NOTE1... */
+#define QV_CPU_SLEEP()          do { \
+    __asm__ __volatile__ ("sei" ::); \
+    __asm__ __volatile__ ("sleep" ::); \
 } while (false)
 
+/* QF CPU reset for AVR */
+#define QF_RESET()       __asm__ __volatile__ ("jmp 0x0000" ::)
 
-#include <msp430.h>  /* CCS intrinsic functions */
+#include <avr/pgmspace.h>    /* accessing data in program memory (PROGMEM) */
+#include <avr/interrupt.h>   /* AVR interrupt support */
+#include <avr/io.h>          /* SREG/SMCR definitions */
 
 #include <stdint.h>      /* Exact-width types. WG14/N843 C99 Standard */
 #include <stdbool.h>     /* Boolean type.      WG14/N843 C99 Standard */
 
 #include "qepn.h"        /* QEP-nano platform-independent public interface */
 #include "qfn.h"         /* QF-nano  platform-independent public interface */
-#include "qkn.h"         /* QK-nano  platform-independent public interface */
+#include "qvn.h"         /* QV-nano  platform-independent public interface */
+
+/*****************************************************************************
+* NOTE1:
+* As described in the "AVR Datasheet" in Section "Reset and Interrupt
+* Handling", when using the SEI instruction to enable interrupts, the
+* instruction following SEI will be executed before any pending interrupts.
+* As the Datasheet shows in the assembly example, the pair of instructions
+*     SEI       ; enable interrupts
+*     SLEEP     ; go to the sleep mode
+* executes ATOMICALLY, and so no interrupt can be serviced between these
+* instructins. You should NEVER separate these two lines.
+*/
 
 #endif /* QFN_PORT_H */
