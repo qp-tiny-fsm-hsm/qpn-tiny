@@ -47,6 +47,54 @@ Q_DEFINE_THIS_MODULE("qepn")
 char_t const Q_ROM QP_versionStr[7] = QP_VERSION_STR;
 
 /****************************************************************************/
+
+#ifdef QF_FSM_ACTIVE
+
+void QFsm_ctor(QFsm * const me, QStateHandler initial) {
+    static QFsmVtable const vtable = { /* QFsm virtual table */
+        &QFsm_init_,
+        &QFsm_dispatch_
+    };
+    me->vptr  = &vtable;
+    me->state = Q_STATE_CAST(0);
+    me->temp  = initial;
+}
+
+void QFsm_init_(QFsm * const me) {
+    /** @pre the virtual pointer must be initialized, the top-most initial
+    * transition must be initialized, and the initial transition must not
+    * be taken yet.
+    */
+    Q_REQUIRE_ID(200, (me->vptr != (QFsmVtable const *)0)
+                      && (me->temp != Q_STATE_CAST(0))
+                      && (me->state == Q_STATE_CAST(0)));
+
+                                 /* execute the top-most initial transition */
+    Q_ALLEGE((*me->temp)(me) == Q_RET_TRAN);    /* transition must be taken */
+
+    Q_SIG(me) = (QSignal)Q_ENTRY_SIG;
+    (void)(*me->temp)(me);                              /* enter the target */
+    me->state = me->temp;                    /* change the new active state */
+}
+
+void QFsm_dispatch_(QFsm * const me) {
+    /** @pre the current state must be initialized and
+    * the state configuration must be stable
+    */
+    Q_REQUIRE_ID(400, (me->state != Q_STATE_CAST(0)) && (me->state == me->temp));
+
+    if ((*me->state)(me) == Q_RET_TRAN) {              /* transition taken? */
+        Q_SIG(me) = (QSignal)Q_EXIT_SIG;
+        (void)(*me->state)(me);                          /* exit the source */
+
+        Q_SIG(me) = (QSignal)Q_ENTRY_SIG;
+        (void)(*me->temp)(me);                          /* enter the target */
+        me->state = me->temp;                /* record the new active state */
+    }
+}
+
+#else
+
 /****************************************************************************/
 /*! empty signal for internal use only */
 #define QEP_EMPTY_SIG_        ((QSignal)0)
@@ -478,3 +526,5 @@ QStateHandler QHsm_childState_(QHsm * const me,
 
     return child; /* return the child */
 }
+
+#endif // QF_FSM_ACTIVE
