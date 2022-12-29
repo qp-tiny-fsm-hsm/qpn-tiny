@@ -97,7 +97,7 @@ OUTPUT    := $(PROJECT)
 LD_SCRIPT := $(PROJECT).ld
 
 QP_SRCS := \
-	qepn_fsm.c \
+	qepn.c \
 	qfn.c \
 	qvn.c
 
@@ -171,11 +171,11 @@ ASFLAGS =
 
 CFLAGS = -mmcu=$(AVR_MCU) -std=gnu99 -fshort-enums -Wall \
 	-ffunction-sections -fdata-sections \
-    -O $(INCLUDES) $(DEFINES)
+    -Og $(INCLUDES) $(DEFINES)
 
 CPPFLAGS = -mmcu=$(AVR_MCU) -fshort-enums -Wall \
 	-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
-    -O $(INCLUDES) $(DEFINES)
+    -Og $(INCLUDES) $(DEFINES)
 
 endif  # .....................................................................
 
@@ -244,7 +244,8 @@ clean:
 	$(BIN_DIR)/*.d \
 	$(BIN_DIR)/*.hex \
 	$(BIN_DIR)/*.elf \
-	$(BIN_DIR)/*.map
+	$(BIN_DIR)/*.map \
+	$(BIN_DIR)/*.lss
 	
 show:
 	@echo PROJECT = $(PROJECT)
