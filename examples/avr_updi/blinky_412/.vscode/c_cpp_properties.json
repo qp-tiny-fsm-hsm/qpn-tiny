@@ -3,25 +3,25 @@
        {
             "name": "avr",
             "includePath": [
-                "${workspaceRoot}/examples/avr_updi/blinky_412",
-                "${workspaceRoot}/include",
-                "${workspaceRoot}/ports/avr_updi/qv/gnu",
+                "${workspaceRoot}",
+                "${workspaceRoot}/../../../include",
+                "${workspaceRoot}/../../../ports/avr_updi/qv/gnu",
                 "/home/josef/.arduino15/packages/DxCore/tools/avr-gcc/7.3.0-atmel3.6.1-azduino6/avr/include"
         ],
             "defines": [
                 "__AVR_ATtiny412__"
             ],
             "compilerPath": "/home/josef/.arduino15/packages/DxCore/tools/avr-gcc/7.3.0-atmel3.6.1-azduino6/bin/avr-gcc",
-            "cStandard": "gnu17",
+            "cStandard": "gnu11",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "${default}",
             "browse":
             {
                 "path":
                 [
-                    "${workspaceRoot}/examples/avr_updi/blinky_412",
-                    "${workspaceRoot}/include",
-                    "${workspaceRoot}/ports/avr_updi/qv/gnu",
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/../../../include",
+                    "${workspaceRoot}/../../../ports/avr_updi/qv/gnu",
                     "/home/josef/.arduino15/packages/DxCore/tools/avr-gcc/7.3.0-atmel3.6.1-azduino6/avr/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,

@@ -41,8 +41,8 @@
 Q_DEFINE_THIS_FILE
 
 /* Local-scope objects -----------------------------------------------------*/
-/* Arduino-UNO runs off the 16MHz oscillator */
-#define F_CPU   16000000UL
+/* Default clock speed */
+#define F_CPU   3333333UL
 
 /* the on-board LED labeled "L" on Arduino-UNO (PORTB) */
 #define LED_L   (1U << 1)
@@ -56,6 +56,7 @@ Q_DEFINE_THIS_FILE
 /* BSP functions ===========================================================*/
 void BSP_init(void) {
     VPORTA.DIR = LED_L | LED_H;
+    
 }
 
 void BSP_ledOff(void) {

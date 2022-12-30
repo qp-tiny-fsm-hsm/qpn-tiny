@@ -1,3 +1,11 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode"
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "qpn.h": "c",
+        "qassert.h": "c",
+        "qfn_port.h": "c",
+        "blinky.h": "c",
+        "bsp.h": "c",
+        "qpn_conf.h": "c"
+    }
 }

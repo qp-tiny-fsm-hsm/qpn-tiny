@@ -125,6 +125,13 @@ ifeq ("$(wildcard $(GNU_AVR))","")
 $(error GNU_AVR toolset not found. Please adjust the Makefile)
 endif
 
+#-----------------------------------------------------------------------------
+# Chip programmer
+MEGATINYCORE = /home/josef/.arduino15/packages/megaTinyCore
+PROG = $(MEGATINYCORE)/tools/python3/3.7.2-post1/python3 -u $(MEGATINYCORE)/hardware/megaavr/2.6.4/tools/prog.py 
+PROGPORT = /dev/ttyUSB0
+
+
 CC    := $(GNU_AVR)/bin/avr-gcc
 CPP   := $(GNU_AVR)/bin/avr-g++
 AS    := $(GNU_AVR)/bin/avr-as
@@ -229,6 +236,10 @@ $(BIN_DIR)/%.o : %.c
 
 $(BIN_DIR)/%.o : %.cpp
 	$(CPP) $(CPPFLAGS) -c $< -o $@
+
+
+prog: $(TARGET_HEX)
+	$(PROG) -t uart -u $(PROGPORT) -b 230400 -d $(AVR_MCU) -f $(TARGET_HEX) -a write
 
 # include dependency files only if our goal depends on their existence
 ifneq ($(MAKECMDGOALS),clean)
