@@ -6,6 +6,7 @@
         "qfn_port.h": "c",
         "blinky.h": "c",
         "bsp.h": "c",
-        "qpn_conf.h": "c"
+        "qpn_conf.h": "c",
+        "qepn.h": "c"
     }
 }
