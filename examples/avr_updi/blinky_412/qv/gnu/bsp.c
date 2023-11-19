@@ -51,6 +51,8 @@ Q_DEFINE_THIS_FILE
 /* ISRs used in this project ===============================================*/
 ISR(TCB0_INT_vect)
 {
+    PORTA.OUTCLR = LED_H;
+    
     TCB0.INTFLAGS = TCB_CAPT_bm;
     PORTA.OUTTGL = LED_H;
     QF_tickXISR(0U); /* process time events for rate 0 */
