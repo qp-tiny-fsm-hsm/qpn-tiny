@@ -1,0 +1,10 @@
+debug/
+dist/
+build/
+dbg/
+rel/
+Makefile-*
+Package-*
+private/
+.generated_files/
+defmplabxtrace.*
