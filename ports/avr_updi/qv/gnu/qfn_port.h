@@ -39,6 +39,8 @@
 #ifndef QFN_PORT_H
 #define QFN_PORT_H
 
+#include <avr/cpufunc.h>
+
 /* GNU-AVR function attribute for "no-return" function */
 #define Q_NORETURN   __attribute__ ((noreturn)) void
 
@@ -59,7 +61,7 @@
 } while (false)
 
 /* QF CPU reset for AVR */
-#define QF_RESET()       __asm__ __volatile__ ("jmp 0x0000" ::)
+#define QF_RESET()       _PROTECTED_WRITE(RSTCTRL_SWRR, RSTCTRL_SWRST_bm)
 
 #include <avr/pgmspace.h>    /* accessing data in program memory (PROGMEM) */
 #include <avr/interrupt.h>   /* AVR interrupt support */

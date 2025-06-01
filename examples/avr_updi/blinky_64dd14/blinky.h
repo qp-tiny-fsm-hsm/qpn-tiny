@@ -34,14 +34,6 @@
 #ifndef BLINKY_H
 #define BLINKY_H
 
-enum BlinkySignals {
-    DUMMY_SIG = Q_USER_SIG,
-    MAX_PUB_SIG,          /* the last published signal */
-
-    TIMEOUT_SIG,
-    MAX_SIG               /* the last signal */
-};
-
 void Blinky_ctor(void);
 
 extern struct BlinkyTag AO_Blinky;

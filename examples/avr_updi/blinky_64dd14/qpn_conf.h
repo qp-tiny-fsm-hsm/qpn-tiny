@@ -34,11 +34,11 @@
 #ifndef QPN_CONF_H
 #define QPN_CONF_H
 
-#define Q_NASSERT
+//#define Q_NASSERT
 #define QF_FSM_ACTIVE
 
-#define Q_PARAM_SIZE            0U
-#define QF_MAX_TICK_RATE        1U
+#define Q_PARAM_SIZE            1U
+#define QF_MAX_TICK_RATE        2U
 #define QF_TIMEEVT_CTR_SIZE     2U
 #define QF_TIMEEVT_PERIODIC
 

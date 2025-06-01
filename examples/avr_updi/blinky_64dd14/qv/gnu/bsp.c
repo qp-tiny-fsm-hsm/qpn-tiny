@@ -32,46 +32,72 @@
  * <info@state-machine.com>
  *****************************************************************************/
 #include "qpn.h"
+#include "qfn.h"
 #include "blinky.h"
 #include "bsp.h"
+#include "signals.h"
 
 /* the AVR device specific header <avr/io.h> is already included */
 /* add other drivers if necessary... */
 
-Q_DEFINE_THIS_FILE
+//Q_DEFINE_THIS_FILE
+
 
 /* Local-scope objects -----------------------------------------------------*/
 /* Default clock speed */
 #define F_CPU 3333333UL
 
+/* Rotary encoder ----------------------------------------------------------*/
+static void setupTimer(void);
+static void debounceRotaryEncoder(void);
+static void debouncePushButton(void);
+
+#define BSP_ENCODER_PORT PORTD
+#define BSP_ENCODER_PUSH_bm (PIN3_bm)
+#define BSP_ENCODER_I_bm (PIN4_bm)
+#define BSP_ENCODER_Q_bm (PIN5_bm)
+
 /* the on-board LED labeled "L" on Arduino-UNO (PORTB) */
-#define LED_L (1U << 1)
-#define LED_H (1U << 2)
+#define BSP_LED_PORT PORTD
+#define BSP_LED_L (PIN4_bm)
+#define BSP_LED_H (PIN5_bm)
+
+
 
 /* ISRs used in this project ===============================================*/
 ISR(TCB0_INT_vect)
 {
-    PORTA.OUTCLR = LED_H;
+    //BSP_LED_PORT.OUTCLR = BSP_LED_H;
     
     TCB0.INTFLAGS = TCB_CAPT_bm;
-    PORTA.OUTTGL = LED_H;
-    QF_tickXISR(0U); /* process time events for rate 0 */
+    //BSP_LED_PORT.OUTTGL = BSP_LED_H;
+    QF_tickXISR(1U); /* process time events for rate 0 */
 }
 
 /* BSP functions ===========================================================*/
 void BSP_init(void)
 {
-    VPORTA.DIR = LED_L | LED_H;
+    BSP_LED_PORT.DIR = BSP_LED_L | BSP_LED_H;
 }
 
 void BSP_ledOff(void)
 {
-    PORTA.OUTSET = LED_L;
+    BSP_LED_PORT.OUTSET = BSP_LED_L;
 }
 
 void BSP_ledOn(void)
 {
-    PORTA.OUTCLR = LED_L;
+    BSP_LED_PORT.OUTCLR = BSP_LED_L;
+}
+
+void BSP_ledOffH(void)
+{
+    BSP_LED_PORT.OUTSET = BSP_LED_H;
+}
+
+void BSP_ledOnH(void)
+{
+    BSP_LED_PORT.OUTCLR = BSP_LED_H;
 }
 
 void BSP_terminate(int16_t result)
@@ -86,6 +112,8 @@ void QF_onStartup(void)
     TCB0.INTCTRL |= TCB_CAPT_bm;
     TCB0.CTRLA |= TCB_ENABLE_bm;
     TCB0.CCMP = 33333U;
+    
+    setupTimer();
 }
 
 void QF_onCleanup(void)
@@ -95,7 +123,7 @@ void QF_onCleanup(void)
 void QV_onIdle(void)
 { /* called with interrupts DISABLED, see NOTE1 */
     /* toggle the User LED, see NOTE2 , not enough LEDs to implement! */
-    PORTA.OUTSET = LED_H;
+    //BSP_LED_PORT.OUTSET = BSP_LED_H;
 
 #ifdef NDEBUG
     /* Put the CPU and peripherals to the low-power mode.
@@ -108,7 +136,7 @@ void QV_onIdle(void)
 #else
     QF_INT_ENABLE(); /* just enable interrupts */
 #endif
-    PORTA.OUTCLR = LED_H;
+    //BSP_LED_PORT.OUTCLR = BSP_LED_H;
 }
 
 Q_NORETURN Q_onAssert(char const Q_ROM *const file, int line)
@@ -118,6 +146,113 @@ Q_NORETURN Q_onAssert(char const Q_ROM *const file, int line)
     QF_RESET();       /* reset the CPU */
     for (;;)
     {
+    }
+}
+
+
+
+static void setupTimer(void)
+{
+    /* Wait for all register to be synchronized */
+    while (RTC.PITSTATUS > 0)
+        ;
+
+    RTC.PITCTRLA = RTC_PERIOD_CYC16_gc | 1 << RTC_PITEN_bp; 
+    RTC.PITINTCTRL = 1 << RTC_PI_bp; 
+}
+
+
+/* This timer interrupt routine is called with a rate of 2.048kHz */
+ISR(RTC_PIT_vect)
+{
+    static volatile uint16_t ticks;
+    
+    ticks++;
+
+    QF_tickXISR(0U);
+
+    debounceRotaryEncoder();
+
+    // debounce rotary encoder push button
+    // 8ms time raster
+    if ((ticks % 16) == 0)
+    {
+        debouncePushButton();
+    }
+
+    if ((ticks % 2048) == 0)
+    {
+        QACTIVE_POST_ISR(&AO_Blinky, ONESECOND_SIG, 0U);
+    }
+
+    RTC.PITINTFLAGS = RTC_PI_bm;
+}
+
+
+static void debounceRotaryEncoder(void)
+{
+    static const int8_t encoderTable[16] = {0, 0, -1, 0, 0, 0, 0, 0, +1, 0, 0, 0, 0, 0, 0, 0};
+    static volatile uint8_t encoderState;
+
+    encoderState = ((encoderState << 2) + ((BSP_ENCODER_PORT.IN >> 4) & 0x03)) & 0x0f;
+    int8_t step = encoderTable[encoderState];
+    if (step != 0)
+    {
+        QACTIVE_POST_ISR((QActive *)&AO_Blinky, ENCODER_STEP_SIG, step);
+    }
+}
+
+static void debouncePushButton(void)
+{
+    static volatile uint8_t debounceReg = 0x02;
+    static volatile uint8_t pressed;
+    static volatile uint8_t released;
+    static volatile uint16_t pressedCounter;
+    static volatile uint16_t releasedCounter;
+    static volatile uint8_t clickCount;
+    
+    
+    if (pressed && (pressedCounter != 0xffff)) {
+        pressedCounter += pressed;
+    }
+    
+    if (released && (releasedCounter != 0xffff)) {
+        releasedCounter += released;
+    }
+
+    debounceReg = (debounceReg << 1) + ((BSP_ENCODER_PORT.IN & BSP_ENCODER_PUSH_bm) ? 0 : 1);
+    if (debounceReg == 0x7f)
+    {
+        if (releasedCounter > 100) {
+            clickCount = 1;
+        }
+        pressed = 1;
+        released = 0;
+        pressedCounter = 0;
+        QACTIVE_POST_ISR((QActive *)&AO_Blinky, BUTTON_PRESS_SIG, 0U);
+    }
+    if (debounceReg == 0x80)
+    {
+        if (pressedCounter > 100) {
+            clickCount = 0;
+        }
+        released = 1;
+        pressed = 0;
+        releasedCounter = 0;
+        QACTIVE_POST_ISR((QActive *)&AO_Blinky, BUTTON_RELEASE_SIG, 0U);
+
+        if (clickCount > 0) {
+            QACTIVE_POST_ISR((QActive *)&AO_Blinky, BUTTON_CLICK_SIG, clickCount);
+        }
+
+        clickCount++;
+    }
+
+    if (pressedCounter == 256) {
+        QACTIVE_POST_ISR((QActive *)&AO_Blinky, BUTTON_LONG_PRESS_SIG, 0U);
+    }
+    if ((pressedCounter > 256) && ((pressedCounter % 128) == 0)) {
+        QACTIVE_POST_ISR((QActive *)&AO_Blinky, BUTTON_LONG_PRESS_REPEAT_SIG, 0U);
     }
 }
 

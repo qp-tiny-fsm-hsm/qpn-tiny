@@ -403,8 +403,12 @@ QState QHsm_top(void const * const me);
 * @usage
 * @include qepn_qtran.c
 */
+#ifdef QF_FSM_ACTIVE
+#define Q_SUPER(super_)  Q_RET_HANDLED
+#else
 #define Q_SUPER(super_)  \
     ((Q_HSM_UPCAST(me))->temp = Q_STATE_CAST(super_), Q_RET_SUPER)
+#endif
 
 /*! Macro to call in a state-handler when it handles an event.
 *  Applicable to both HSMs and FSMs.

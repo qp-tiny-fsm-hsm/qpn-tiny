@@ -34,19 +34,25 @@
 #include "qpn.h"     /* QP-nano API */
 #include "bsp.h"     /* Board Support Package */
 #include "blinky.h"  /* Application interface */
+#include "test.h"  /* Application interface */
+
+Q_DEFINE_THIS_MODULE("main")
 
 /* Local-scope objects -----------------------------------------------------*/
 static QEvt l_blinkyQSto[10]; /* Event queue storage for Blinky */
+static QEvt l_testQSto[10]; /* Event queue storage for Test */
 
 /* QF_active[] array defines all active object control blocks --------------*/
 QActiveCB const Q_ROM QF_active[] = {
     { (QActive *)0,           (QEvt *)0,        0U                      },
-    { (QActive *)&AO_Blinky,  l_blinkyQSto,     Q_DIM(l_blinkyQSto)     }
+    { (QActive *)&AO_Blinky,  l_blinkyQSto,     Q_DIM(l_blinkyQSto)     },
+    { (QActive *)&AO_Test,    l_testQSto,       Q_DIM(l_testQSto)       }
 };
 
 /*..........................................................................*/
 int main(void) {
     Blinky_ctor(); /* instantiate all Blinky AO */
+    Test_ctor();
 
     QF_init(Q_DIM(QF_active)); /* initialize the QF-nano framework */
     BSP_init();      /* initialize the Board Support Package */

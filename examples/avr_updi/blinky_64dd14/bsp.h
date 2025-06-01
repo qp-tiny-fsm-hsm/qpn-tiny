@@ -39,5 +39,7 @@
 void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);
+void BSP_ledOffH(void);
+void BSP_ledOnH(void);
 
 #endif /* BSP_H */
