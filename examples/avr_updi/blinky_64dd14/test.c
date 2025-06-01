@@ -77,8 +77,8 @@ static QState Test_initial(Test * const me) {
     */
     QActive_armX(&me->super,
                  1U,
-                 BSP_TICKS_PER_SEC/2U,
-                 BSP_TICKS_PER_SEC/2U);
+                 BSP_TICKS_PER_SEC_1,
+                 10);
     return Q_TRAN(&Test_off);
 }
 

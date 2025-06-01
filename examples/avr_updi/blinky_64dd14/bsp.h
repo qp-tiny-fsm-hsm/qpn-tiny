@@ -35,6 +35,7 @@
 #define BSP_H
 
 #define BSP_TICKS_PER_SEC    100U
+#define BSP_TICKS_PER_SEC_1 2000U
 
 void BSP_init(void);
 void BSP_ledOff(void);

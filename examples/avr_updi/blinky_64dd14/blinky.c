@@ -67,7 +67,7 @@ QState Blinky_off(Blinky * const me) {
     QState status;
     switch (Q_SIG(me)) {
         case Q_ENTRY_SIG: {
-            BSP_ledOff();
+            //BSP_ledOff();
             status = Q_HANDLED();
             break;
         }
@@ -87,7 +87,7 @@ QState Blinky_on(Blinky * const me) {
     QState status;
     switch (Q_SIG(me)) {
         case Q_ENTRY_SIG: {
-            BSP_ledOn();
+            //BSP_ledOn();
             status = Q_HANDLED();
             break;
         }

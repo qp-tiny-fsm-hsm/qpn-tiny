@@ -71,13 +71,15 @@ ISR(TCB0_INT_vect)
     
     TCB0.INTFLAGS = TCB_CAPT_bm;
     //BSP_LED_PORT.OUTTGL = BSP_LED_H;
-    QF_tickXISR(1U); /* process time events for rate 0 */
+    QF_tickXISR(0U); /* process time events for rate 0 */
 }
 
 /* BSP functions ===========================================================*/
 void BSP_init(void)
 {
     BSP_LED_PORT.DIR = BSP_LED_L | BSP_LED_H;
+    BSP_LED_PORT.PIN4CTRL = PORT_INVEN_bm;
+    BSP_LED_PORT.PIN5CTRL = PORT_INVEN_bm;
 }
 
 void BSP_ledOff(void)
@@ -169,7 +171,7 @@ ISR(RTC_PIT_vect)
     
     ticks++;
 
-    QF_tickXISR(0U);
+    QF_tickXISR(1U);
 
     debounceRotaryEncoder();
 
