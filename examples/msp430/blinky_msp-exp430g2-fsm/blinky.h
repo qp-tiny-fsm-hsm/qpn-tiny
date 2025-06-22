@@ -1,13 +1,13 @@
 /*****************************************************************************
-* Product: QP-nano configuration for the Blinky example
-* Last Updated for Version: 5.6.2
-* Date of the Last Update:  2016-04-05
+* Product: simple "Blinky" example
+* Last updated for version 5.4.0
+* Last updated on  2015-05-18
 *
 *                    Q u a n t u m     L e a P s
 *                    ---------------------------
 *                    innovating embedded systems
 *
-* Copyright (C) Quantum Leaps, LLC. All rights reserved.
+* Copyright (C) Quantum Leaps, www.state-machine.com.
 *
 * This program is open source software: you can redistribute it and/or
 * modify it under the terms of the GNU General Public License as published
@@ -31,12 +31,19 @@
 * <www.state-machine.com/licensing>
 * <info@state-machine.com>
 *****************************************************************************/
-#ifndef QPN_CONF_H
-#define QPN_CONF_H
+#ifndef BLINKY_H
+#define BLINKY_H
 
-#define Q_PARAM_SIZE            2U
-#define QF_MAX_TICK_RATE        1U
-#define QF_TIMEEVT_CTR_SIZE     2U
-#define QF_TIMEEVT_PERIODIC
+enum BlinkySignals {
+    DUMMY_SIG = Q_USER_SIG,
+    MAX_PUB_SIG,          /* the last published signal */
 
-#endif  /* QPN_CONF_H */
+    TIMEOUT_SIG,
+    MAX_SIG               /* the last signal */
+};
+
+void Blinky_ctor(void);
+
+extern struct BlinkyTag AO_Blinky;
+
+#endif /* BLINKY_H */

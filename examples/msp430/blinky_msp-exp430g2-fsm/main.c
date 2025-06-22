@@ -1,7 +1,7 @@
 /*****************************************************************************
-* Product: QP-nano configuration for the Blinky example
-* Last Updated for Version: 5.6.2
-* Date of the Last Update:  2016-04-05
+* Product: "Blinky" example
+* Last Updated for Version: 5.8.0
+* Date of the Last Update:  2016-11-06
 *
 *                    Q u a n t u m     L e a P s
 *                    ---------------------------
@@ -31,12 +31,25 @@
 * <www.state-machine.com/licensing>
 * <info@state-machine.com>
 *****************************************************************************/
-#ifndef QPN_CONF_H
-#define QPN_CONF_H
+#include "qpn.h"     /* QP-nano API */
+#include "bsp.h"     /* Board Support Package */
+#include "blinky.h"  /* Application interface */
 
-#define Q_PARAM_SIZE            2U
-#define QF_MAX_TICK_RATE        1U
-#define QF_TIMEEVT_CTR_SIZE     2U
-#define QF_TIMEEVT_PERIODIC
+/* Local-scope objects -----------------------------------------------------*/
+static QEvt l_blinkyQSto[10]; /* Event queue storage for Blinky */
 
-#endif  /* QPN_CONF_H */
+/* QF_active[] array defines all active object control blocks --------------*/
+QActiveCB const Q_ROM QF_active[] = {
+    { (QActive *)0,           (QEvt *)0,        0U                      },
+    { (QActive *)&AO_Blinky,  l_blinkyQSto,     Q_DIM(l_blinkyQSto)     }
+};
+
+/*..........................................................................*/
+int main(void) {
+    Blinky_ctor(); /* instantiate all Blinky AO */
+
+    QF_init(Q_DIM(QF_active)); /* initialize the QF-nano framework */
+    BSP_init();      /* initialize the Board Support Package */
+
+    return QF_run(); /* transfer control to QF-nano */
+}
