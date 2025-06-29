@@ -35,9 +35,6 @@
 #include "blinky.h"
 #include "bsp.h"
 
-#include <msp430g2553.h>  /* MSP430 variant used */
-/* add other drivers if necessary... */
-
 //Q_DEFINE_THIS_FILE
 
 /* Local-scope objects -----------------------------------------------------*/

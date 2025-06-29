@@ -1,1 +1,14 @@
-{"version":"0.2.0","configurations":[]}
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "blinky-qv_msp-exp430g2",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "blinky-qv_msp-exp430g2",
+                "resourceId": "/blinky-qv_msp-exp430g2"
+            }
+        }
+    ]
+}
